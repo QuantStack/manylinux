@@ -1,5 +1,5 @@
 # See docker/glibc/
-FROM quay.io/pypa/manylinux2010_centos-6-no-vsyscall
+FROM centos:6
 LABEL maintainer="The ManyLinux project"
 
 ENV AUDITWHEEL_ARCH x86_64
