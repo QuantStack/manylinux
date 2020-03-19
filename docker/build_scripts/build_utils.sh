@@ -44,9 +44,15 @@ function do_cpython_build {
     fi
     local prefix="/opt/_internal/cpython-${py_ver}${dir_suffix}"
     mkdir -p ${prefix}/lib
-    ./configure --prefix=${prefix} --disable-shared $unicode_flags > /dev/null
+
+    local -a extra_opts=(--enable-optimizations --with-lto)
+    local -a lto_flags=(-fuse-linker-plugin -ffat-lto-objects -flto-partition=none -flto)
+    local old_cflags=${CFLAGS}
+    export CFLAGS="${CFLAGS} ${lto_flags[@]}"
+    ./configure --prefix=${prefix} "${extra_opts[@]}" --disable-shared $unicode_flags > /dev/null
     make -j2 > /dev/null
     make install > /dev/null
+
     popd
     rm -rf Python-$py_ver
     # Some python's install as bin/python3. Make them available as
@@ -69,6 +75,8 @@ function do_cpython_build {
     ${prefix}/bin/pip install -U --require-hashes -r ${MY_DIR}/requirements.txt
     local abi_tag=$(${prefix}/bin/python ${MY_DIR}/python-tag-abi-tag.py)
     ln -s ${prefix} /opt/python/${abi_tag}
+
+    export CFLAGS="${old_cflags}"
 }
 
 
